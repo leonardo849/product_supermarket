@@ -27,3 +27,10 @@ type StockModel struct {
 	UpdatedAt time.Time
 }
 
+type UserModel struct {
+	ID        uuid.UUID `gorm:"type:uuid;primaryKey"`
+	AuthId string
+	Role string 
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}

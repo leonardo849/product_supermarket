@@ -1,10 +1,12 @@
 package product
 
 import (
+
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	domainProduct "github.com/leonardo849/product_supermarket/internal/domain/product"
 	domainStock "github.com/leonardo849/product_supermarket/internal/domain/stock"
+	domainUser "github.com/leonardo849/product_supermarket/internal/domain/user"
 	"github.com/leonardo849/product_supermarket/internal/infrastructure/persistence/postgres"
 	"gorm.io/gorm"
 )
@@ -22,25 +24,39 @@ type CreateProductInput struct {
 type CreateProductUseCase struct {
     productRepo domainProduct.ProductRepository
     stockRepo   domainStock.StockRepository
+	userRepo domainUser.UserRepository
 	validator *validator.Validate
 	uow         *postgres.UnitOfWork
 
 }
 
-func NewCreateProductUseCase(productRepo domainProduct.ProductRepository, stockRepo domainStock.StockRepository, uow *postgres.UnitOfWork) *CreateProductUseCase {
+func NewCreateProductUseCase(productRepo domainProduct.ProductRepository, stockRepo domainStock.StockRepository, uow *postgres.UnitOfWork, userRepo domainUser.UserRepository) *CreateProductUseCase {
     return &CreateProductUseCase{
         productRepo: productRepo,
         stockRepo:   stockRepo,
+		userRepo: userRepo,
 		validator: validator.New(),
 		uow: uow,
     }
 }
 
-func (uc *CreateProductUseCase) Execute(input CreateProductInput) (uuid.UUID, error) {
+func (uc *CreateProductUseCase) Execute(input CreateProductInput, authId string, issuedAt float64) (uuid.UUID, error) {
 	if err := uc.validator.Struct(input); err != nil {
 		return uuid.Nil, err
 	}
 	
+	user, err := uc.userRepo.FindUserByAuthID(authId)
+	if err != nil {
+		return  uuid.Nil, err
+	}
+
+	if user.UserWasUpdatedAfterToken(issuedAt) {
+		return  uuid.Nil, domainUser.ErrUserWasUpdatedAfterToken
+	}
+
+	if !user.CanUserCreateOrEditAProduct() {
+		return  uuid.Nil, domainUser.ErrUserCannotCreateAProduct
+	}
 
 	product, err := domainProduct.New(input.Name, input.Description, input.PriceInCents, input.Category)
 	if err != nil {

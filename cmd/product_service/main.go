@@ -18,8 +18,9 @@ func main() {
 	}
 	productRepo := postgres.NewProductRepository(db)
 	stockRepo := postgres.NewStockRepository(db)
+	userRepo := postgres.NewUserRepository(db)
 	uow := postgres.NewUnitOfWork(db)
-	productUc := productApp.NewCreateProductUseCase(productRepo, stockRepo, uow)
+	productUc := productApp.NewCreateProductUseCase(productRepo, stockRepo, uow, userRepo)
 	productHandler := productHandler.NewProductHandler(productUc)
 	app := http.SetupApp(productHandler)
 	app.Listen(":" + config.HTTPPort)

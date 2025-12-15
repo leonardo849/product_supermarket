@@ -20,7 +20,7 @@ func NewConnection(databaseURI string) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	db.AutoMigrate(&ProductModel{}, &StockModel{})
+	db.AutoMigrate(&ProductModel{}, &StockModel{}, &UserModel{})
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(25)
 	sqlDB.SetConnMaxLifetime(5 * time.Minute)
