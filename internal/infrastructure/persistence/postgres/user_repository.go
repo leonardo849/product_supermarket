@@ -17,6 +17,7 @@ func toDomainUser(model *UserModel) *domainUser.User {
 		AuthID: model.AuthId,
 		Role: domainUser.Role(model.Role),
 		CreatedAt: model.CreatedAt,
+		AuthUpdatedAt: model.AuthUpdatedAt,
 		UpdatedAt: model.UpdatedAt,
 	}
 }
@@ -33,6 +34,7 @@ func (u *UserRepository) Create(user *domainUser.User) error {
 		AuthId: user.AuthID,
 		Role: string(user.Role),
 		CreatedAt: user.CreatedAt,
+		AuthUpdatedAt: user.AuthUpdatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}
 	return  u.db.Create(&model).Error

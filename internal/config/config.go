@@ -12,6 +12,7 @@ type Config struct {
 	HTTPPort    string
 	DatabaseURL string
 	SecretJWT string
+	RabbitURL string
 }
 
 func Load() Config {
@@ -29,6 +30,7 @@ func Load() Config {
 			HTTPPort:    mustGetEnv("PORT"),
 			DatabaseURL: mustGetEnv("DATABASE_URI"),
 			SecretJWT: mustGetEnv("SECRETJWT"),
+			RabbitURL: mustGetEnv("RABBIT_URI"),
 		}
 	}
 
@@ -41,6 +43,7 @@ func Load() Config {
 			"postgres://postgres:postgres@localhost:5432/product_db?sslmode=disable",
 		),
 		SecretJWT:mustGetEnv("SECRETJWT"),
+		RabbitURL: mustGetEnv("RABBIT_URI"),
 	}
 }
 

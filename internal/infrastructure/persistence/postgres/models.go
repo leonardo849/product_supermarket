@@ -32,5 +32,6 @@ type UserModel struct {
 	AuthId string
 	Role string 
 	CreatedAt time.Time
+	AuthUpdatedAt time.Time
 	UpdatedAt time.Time
 }
