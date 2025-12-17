@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	eventsProduct "github.com/leonardo849/product_supermarket/internal/domain/events/product"
+	// eventsProduct "github.com/leonardo849/product_supermarket/internal/domain/events/product"
 	eventsUser "github.com/leonardo849/product_supermarket/internal/domain/events/user"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -31,8 +31,6 @@ func NewPublisher(ch *amqp.Channel, exchange string) *Publisher {
 
 func (p *Publisher) createExchanges() {
     switch p.exchange {
-    case "email_direct":
-        p.channel.ExchangeDeclare(p.exchange, "direct", true, false, false, false, nil)
     case "product_auth_direct":
         p.channel.ExchangeDeclare(p.exchange, "direct", true, false, false, false, nil)
     }
@@ -46,9 +44,9 @@ func (p *Publisher) Publish(event any) error {
     )
     p.createExchanges()
     switch e := event.(type) {
-    case eventsProduct.ProductCreated:
-        routingKey = "email"
-        body, err = json.Marshal(e)
+    // case eventsProduct.ProductCreated:
+    //     routingKey = "email"
+    //     body, err = json.Marshal(e)
     case eventsUser.EmitUserCreated:
         routingKey = "user.product.created"
         body, err = json.Marshal(e)

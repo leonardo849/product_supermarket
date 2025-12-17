@@ -1,14 +1,14 @@
 package product
 
 import (
-	"time"
+	// "time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/leonardo849/product_supermarket/internal/application/common"
 
 	// eventsUser "github.com/leonardo849/product_supermarket/internal/domain/events/user"
-	eventsProduct "github.com/leonardo849/product_supermarket/internal/domain/events/product"
+	// eventsProduct "github.com/leonardo849/product_supermarket/internal/domain/events/product"
 	domainProduct "github.com/leonardo849/product_supermarket/internal/domain/product"
 	domainStock "github.com/leonardo849/product_supermarket/internal/domain/stock"
 	domainUser "github.com/leonardo849/product_supermarket/internal/domain/user"
@@ -100,15 +100,15 @@ func (uc *CreateProductUseCase) Execute(input CreateProductInput, authId string,
 		return uuid.Nil, err
 	}
 
-	go func() {
-		event := eventsProduct.ProductCreated{
-			UserID: user.ID.String(),
-			ProductID: product.ID.String(),
-			ProductName: product.Name,
-			OccurredAt: time.Now(),
-		}
-		uc.publisher.Publish(event)
-	}()
+	// go func() {
+	// 	event := eventsProduct.ProductCreated{
+	// 		UserID: user.ID.String(),
+	// 		ProductID: product.ID.String(),
+	// 		ProductName: product.Name,
+	// 		OccurredAt: time.Now(),
+	// 	}
+	// 	uc.publisher.Publish(event)
+	// }()
 	return product.ID, nil
 
 }

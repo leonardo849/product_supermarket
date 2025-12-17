@@ -1,7 +1,6 @@
 package product
 
 import (
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/leonardo849/product_supermarket/internal/application/product"
