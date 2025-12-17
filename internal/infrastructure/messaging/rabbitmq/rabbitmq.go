@@ -1,11 +1,13 @@
 package rabbitmq
 
 import (
-    "encoding/json"
-    "fmt"
+	"encoding/json"
+	"fmt"
+	"log"
 
-    amqp "github.com/rabbitmq/amqp091-go"
 	eventsProduct "github.com/leonardo849/product_supermarket/internal/domain/events/product"
+	eventsUser "github.com/leonardo849/product_supermarket/internal/domain/events/user"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 
@@ -27,7 +29,14 @@ func NewPublisher(ch *amqp.Channel, exchange string) *Publisher {
 }
 
 
-
+func (p *Publisher) createExchanges() {
+    switch p.exchange {
+    case "email_direct":
+        p.channel.ExchangeDeclare(p.exchange, "direct", true, false, false, false, nil)
+    case "product_auth_direct":
+        p.channel.ExchangeDeclare(p.exchange, "direct", true, false, false, false, nil)
+    }
+}
 
 func (p *Publisher) Publish(event any) error {
     var (
@@ -35,10 +44,16 @@ func (p *Publisher) Publish(event any) error {
         body       []byte
         err        error
     )
-
+    p.createExchanges()
     switch e := event.(type) {
     case eventsProduct.ProductCreated:
         routingKey = "email"
+        body, err = json.Marshal(e)
+    case eventsUser.EmitUserCreated:
+        routingKey = "user.product.created"
+        body, err = json.Marshal(e)
+    case eventsUser.EmitUserCreatedError:
+        routingKey = "user.product.created_error"
         body, err = json.Marshal(e)
     default:
         return fmt.Errorf("application doesn't know that event %T", event)
@@ -47,7 +62,7 @@ func (p *Publisher) Publish(event any) error {
     if err != nil {
         return err
     }
-
+    log.Printf("publishing message to exchange: %s, routing key: %s", p.exchange, routingKey)
     return p.channel.Publish(
         p.exchange,
         routingKey,

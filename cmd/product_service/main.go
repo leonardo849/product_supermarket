@@ -43,6 +43,6 @@ func main() {
 
 func runConsumers(ch *amqp091.Channel, userRepo *postgres.UserRepository) {
 	userUc := userApp.NewCreateUserUseCase(userRepo)
-	userCreatedProductConsumer := userConsumer.NewUserCreatedProductConsumer(ch, "queue_product_auth", userUc)
+	userCreatedProductConsumer := userConsumer.NewUserCreatedProductConsumer(ch, "queue_product_auth", userUc, rabbitmq.NewPublisher(ch, "product_auth_direct"))
 	userCreatedProductConsumer.Start()
 }

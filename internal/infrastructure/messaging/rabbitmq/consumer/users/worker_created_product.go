@@ -9,6 +9,7 @@ import (
     amqp "github.com/rabbitmq/amqp091-go"
     eventsUser "github.com/leonardo849/product_supermarket/internal/domain/events/user"
     userApplication "github.com/leonardo849/product_supermarket/internal/application/user"
+    commom "github.com/leonardo849/product_supermarket/internal/application/common"
 )
 
 type UserCreatedProductConsumer struct {
@@ -16,18 +17,21 @@ type UserCreatedProductConsumer struct {
     queueName string
     useCase   *userApplication.CreateUserUseCase
     exchange string
+    publish commom.EventPublisher 
 }
 
 func NewUserCreatedProductConsumer(
     ch *amqp.Channel,
     queue string,
     useCase *userApplication.CreateUserUseCase,
+    publish commom.EventPublisher,
 ) *UserCreatedProductConsumer {
     return &UserCreatedProductConsumer{
         channel:   ch,
         queueName: queue,
         useCase:   useCase,
         exchange: "auth_topic",
+        publish: publish,
     }
 }
 
@@ -98,14 +102,20 @@ func (c *UserCreatedProductConsumer) Start() error {
             }
 
             _, err := c.useCase.Execute(body)
-
             if err != nil {
                 log.Print(err.Error())
-                msg.Nack(false, false) // retry
+                msg.Nack(false, false)  // not retry
+                body := eventsUser.EmitUserCreatedError{
+                    ID: body.ID,
+                }
+                c.publish.Publish(body)
                 continue
             }
-
             msg.Ack(false)
+            createdUser := eventsUser.EmitUserCreated{
+                ID: body.ID,
+            }
+            c.publish.Publish(createdUser)
         }
     }()
 
