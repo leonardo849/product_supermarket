@@ -16,7 +16,7 @@ type Stock struct {
 }
 
 func New(Quantity int64, Minimum int64) (*Stock, error) {
-	now := time.Now()
+	now := time.Now().UTC()
 	if Quantity < 0 {
 		return nil, ErrInvalidQuantity
 	}

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"errors"
+	"log"
 
 	domainUser "github.com/leonardo849/product_supermarket/internal/domain/user"
 	"gorm.io/gorm"
@@ -12,6 +13,7 @@ type UserRepository struct {
 }
 
 func toDomainUser(model *UserModel) *domainUser.User {
+	
 	return  &domainUser.User{
 		ID: model.ID,
 		AuthID: model.AuthId,
@@ -37,6 +39,7 @@ func (u *UserRepository) Create(user *domainUser.User) error {
 		AuthUpdatedAt: user.AuthUpdatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}
+	log.Print(model.UpdatedAt, model.CreatedAt, model.AuthUpdatedAt)
 	return  u.db.Create(&model).Error
 }
 

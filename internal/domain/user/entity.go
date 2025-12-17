@@ -40,7 +40,7 @@ func New(AuthID string, role Role, authUpdatedAt string) (*User, error){
 	// if mongoIDRegex.MatchString(AuthID) {
 	// 	return nil, ErrItIsNotAMongoID
 	// }
-	now := time.Now()
+	now := time.Now().UTC()
 	return  &User{
 		ID: uuid.New(),
 		AuthID: AuthID,
