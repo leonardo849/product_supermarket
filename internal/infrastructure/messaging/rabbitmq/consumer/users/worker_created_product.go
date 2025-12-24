@@ -1,4 +1,4 @@
-package consumer
+package users
 
 
 
@@ -64,7 +64,7 @@ func (c *UserCreatedProductConsumer) createQueue() {
 }
 
 func (c *UserCreatedProductConsumer) bindQueue() {
-    c.channel.QueueBind(c.queueName, "user.auth.*", c.exchange, false, nil)
+    c.channel.QueueBind(c.queueName, "user.auth.created", c.exchange, false, nil)
 }
 
 func (c *UserCreatedProductConsumer) Start() error {

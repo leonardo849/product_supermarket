@@ -54,3 +54,12 @@ func (u *UserRepository) FindUserByAuthID(authId string) (*domainUser.User, erro
 	}
 	return toDomainUser(&user), nil
 }
+
+func (u *UserRepository) DeleteUserByAuthId(authId string) error {
+	var user UserModel
+	err := u.db.Where("auth_id = ?", authId).Delete(&user).Error
+	if err != nil {
+		return  err
+	}
+	return nil
+} 
