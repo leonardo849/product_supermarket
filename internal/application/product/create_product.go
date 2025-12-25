@@ -14,6 +14,7 @@ import (
 	domainUser "github.com/leonardo849/product_supermarket/internal/domain/user"
 	"github.com/leonardo849/product_supermarket/internal/infrastructure/persistence/postgres"
 	"gorm.io/gorm"
+	applicationUser "github.com/leonardo849/product_supermarket/internal/application/user"
 )
 
 type CreateProductInput struct {
@@ -28,17 +29,18 @@ type CreateProductInput struct {
 type CreateProductUseCase struct {
 	productRepo domainProduct.ProductRepository
 	stockRepo   domainStock.StockRepository
-	userRepo    domainUser.UserRepository
+	// userRepo    domainUser.UserRepository
 	validator   *validator.Validate
 	uow         *postgres.UnitOfWork
 	publisher   common.EventPublisher
+	findUserUc *applicationUser.FindUserUseByAuthIdCase
 }
 
-func NewCreateProductUseCase(productRepo domainProduct.ProductRepository, stockRepo domainStock.StockRepository, uow *postgres.UnitOfWork, userRepo domainUser.UserRepository, publisher common.EventPublisher) *CreateProductUseCase {
+func NewCreateProductUseCase(productRepo domainProduct.ProductRepository, stockRepo domainStock.StockRepository, uow *postgres.UnitOfWork, findUserUc *applicationUser.FindUserUseByAuthIdCase, publisher common.EventPublisher) *CreateProductUseCase {
 	return &CreateProductUseCase{
 		productRepo: productRepo,
 		stockRepo:   stockRepo,
-		userRepo:    userRepo,
+		findUserUc: findUserUc,
 		validator:   validator.New(),
 		uow:         uow,
 		publisher:   publisher,
@@ -50,9 +52,9 @@ func (uc *CreateProductUseCase) Execute(input CreateProductInput, authId string,
 		return uuid.Nil, err
 	}
 
-	user, err := uc.userRepo.FindUserByAuthID(authId)
+	user, err := uc.findUserUc.Execute(authId)
 	if err != nil {
-		return uuid.Nil, err
+		return  uuid.Nil, err
 	}
 
 	if user.UserWasUpdatedAfterToken(issuedAt) {

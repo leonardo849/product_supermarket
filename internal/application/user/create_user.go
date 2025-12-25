@@ -1,7 +1,9 @@
 package user
 
 import (
+	"context"
 
+	"log"
 	"github.com/google/uuid"
 	domainUser "github.com/leonardo849/product_supermarket/internal/domain/user"
 )
@@ -14,11 +16,13 @@ type CreateUserInput struct {
 
 type CreateUserUseCase struct {
 	userRepo    domainUser.UserRepository
+	userCache domainUser.Cache
 }
 
-func NewCreateUserUseCase(userRepo    domainUser.UserRepository) *CreateUserUseCase {
+func NewCreateUserUseCase(userRepo    domainUser.UserRepository, userCache domainUser.Cache) *CreateUserUseCase {
 	return  &CreateUserUseCase{
 		userRepo: userRepo,
+		userCache: userCache,
 	}
 }
 
@@ -30,5 +34,11 @@ func (uc *CreateUserUseCase) Execute(input CreateUserInput) (uuid.UUID, error) {
 	if err := uc.userRepo.Create(user); err != nil {
 		return  uuid.Nil, err
 	}
+	go func() {
+		if err := uc.userCache.Set(context.Background(), user); err != nil {
+			log.Println(err.Error())
+		}
+		log.Print("user was setted in cache")
+	}()
 	return  user.ID, nil
 }

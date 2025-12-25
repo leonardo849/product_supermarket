@@ -1,13 +1,15 @@
 package users
 
 import (
-    "encoding/json"
-    "log"
+	"context"
+	"encoding/json"
+	"log"
 
-    amqp "github.com/rabbitmq/amqp091-go"
-    eventsUser "github.com/leonardo849/product_supermarket/internal/domain/events/user"
-    userApplication "github.com/leonardo849/product_supermarket/internal/application/user"
-    // commom "github.com/leonardo849/product_supermarket/internal/application/common"
+	userApplication "github.com/leonardo849/product_supermarket/internal/application/user"
+	domainError "github.com/leonardo849/product_supermarket/internal/domain/error"
+	eventsUser "github.com/leonardo849/product_supermarket/internal/domain/events/user"
+	amqp "github.com/rabbitmq/amqp091-go"
+	// commom "github.com/leonardo849/product_supermarket/internal/application/common"
 )
 
 type UserDeletedProductConsumer struct {
@@ -15,18 +17,21 @@ type UserDeletedProductConsumer struct {
     queueName string
     useCase   *userApplication.DeleteUserUseCase
     exchange string
+	errorCache domainError.ErrorCache
 }
 
 func NewDeletedUserProductConsumer(
 	ch *amqp.Channel,
     queue string,
     useCase *userApplication.DeleteUserUseCase,
+	errorCache domainError.ErrorCache,
 )*UserDeletedProductConsumer {
 	return  &UserDeletedProductConsumer{
 		channel: ch,
 		queueName: queue,
 		useCase: useCase,
 		exchange: "auth_topic",
+		errorCache: errorCache,
 	}
 }
 
@@ -83,13 +88,19 @@ func (c *UserDeletedProductConsumer) Start() error {
     }
 
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Println("panic recovered in consumer:", r)
+			}
+		}()
 		for msg := range msgs {
 			var event eventsUser.UserDeleted
 			if err := json.Unmarshal(msg.Body, &event); err != nil {
 				log.Println(err.Error())
                 msg.Nack(false, false) 
-                continue
+				continue
 			}
+			c.errorCache.SetAuthError(context.Background(), event.ID)
 			log.Print(event)
 
 			body := event.ID
@@ -98,6 +109,7 @@ func (c *UserDeletedProductConsumer) Start() error {
 			if err != nil {
 				log.Print(err.Error())
 				msg.Nack(false, true)
+				continue
 			} 
 
 			msg.Ack(false)

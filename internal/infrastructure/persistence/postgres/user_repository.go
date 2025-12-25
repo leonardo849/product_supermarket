@@ -63,3 +63,15 @@ func (u *UserRepository) DeleteUserByAuthId(authId string) error {
 	}
 	return nil
 } 
+
+func (u *UserRepository) FindUserById(id string) (*domainUser.User, error) {
+	var user UserModel
+	err := u.db.First(&user, "id = ?", id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domainUser.ErrUserNotFound
+		}
+		return nil, err
+	}
+	return toDomainUser(&user), nil
+}

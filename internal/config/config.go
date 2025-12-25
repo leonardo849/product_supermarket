@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -13,6 +14,9 @@ type Config struct {
 	DatabaseURL string
 	SecretJWT string
 	RabbitURL string
+	RedisUri string
+	RedisPassword string
+	RedisDatabase int
 }
 
 func Load() Config {
@@ -24,13 +28,22 @@ func Load() Config {
 		}
 	}
 
+	redisDatabase, err := strconv.Atoi(getEnv("REDIS_DATABASE", "0"))
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	if env == "PROD" {
+		
 		return Config{
 			Env:         env,
 			HTTPPort:    mustGetEnv("PORT"),
 			DatabaseURL: mustGetEnv("DATABASE_URI"),
 			SecretJWT: mustGetEnv("SECRETJWT"),
 			RabbitURL: mustGetEnv("RABBIT_URI"),
+			RedisUri: mustGetEnv("REDIS_URI"),
+			RedisPassword: getEnv("REDIS_PASSWORD", ""),
+			RedisDatabase: redisDatabase,
 		}
 	}
 
@@ -44,6 +57,9 @@ func Load() Config {
 		),
 		SecretJWT:mustGetEnv("SECRETJWT"),
 		RabbitURL: mustGetEnv("RABBIT_URI"),
+		RedisUri: mustGetEnv("REDIS_URI"),
+		RedisPassword: getEnv("REDIS_PASSWORD", ""),
+		RedisDatabase: redisDatabase,
 	}
 }
 

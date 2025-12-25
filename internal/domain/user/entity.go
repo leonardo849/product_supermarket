@@ -8,12 +8,12 @@ import (
 )
 
 type User struct {
-	ID uuid.UUID
-	AuthID string 
-	Role Role
-	AuthUpdatedAt time.Time
-	CreatedAt time.Time 
-	UpdatedAt time.Time 
+	ID uuid.UUID `json:"id"`
+	AuthID string  `json:"auth_id"`
+	Role Role `json:"role"`
+	AuthUpdatedAt time.Time `json:"auth_updated_at"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
 }
 
 func (u *User) CanUserCreateOrEditAProduct() bool {

@@ -1,15 +1,15 @@
 package users
 
-
-
 import (
-    "encoding/json"
-    "log"
+	"context"
+	"encoding/json"
+	"log"
 
-    amqp "github.com/rabbitmq/amqp091-go"
-    eventsUser "github.com/leonardo849/product_supermarket/internal/domain/events/user"
-    userApplication "github.com/leonardo849/product_supermarket/internal/application/user"
-    commom "github.com/leonardo849/product_supermarket/internal/application/common"
+	commom "github.com/leonardo849/product_supermarket/internal/application/common"
+	userApplication "github.com/leonardo849/product_supermarket/internal/application/user"
+	domainError "github.com/leonardo849/product_supermarket/internal/domain/error"
+	eventsUser "github.com/leonardo849/product_supermarket/internal/domain/events/user"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type UserCreatedProductConsumer struct {
@@ -18,13 +18,17 @@ type UserCreatedProductConsumer struct {
     useCase   *userApplication.CreateUserUseCase
     exchange string
     publish commom.EventPublisher 
+    errorCache domainError.ErrorCache
+    useCaseDeleteUser *userApplication.DeleteUserUseCase
 }
 
 func NewUserCreatedProductConsumer(
     ch *amqp.Channel,
     queue string,
     useCase *userApplication.CreateUserUseCase,
+    useCaseDeleteUser *userApplication.DeleteUserUseCase,
     publish commom.EventPublisher,
+    errorCache domainError.ErrorCache,
 ) *UserCreatedProductConsumer {
     return &UserCreatedProductConsumer{
         channel:   ch,
@@ -32,6 +36,8 @@ func NewUserCreatedProductConsumer(
         useCase:   useCase,
         exchange: "auth_topic",
         publish: publish,
+        useCaseDeleteUser: useCaseDeleteUser,
+        errorCache: errorCache,
     }
 }
 
@@ -85,26 +91,41 @@ func (c *UserCreatedProductConsumer) Start() error {
     }
 
     go func() {
+        defer func() {
+			if r := recover(); r != nil {
+				log.Println("panic recovered in consumer:", r)
+			}
+		}()
         for msg := range msgs {
-            var event eventsUser.UserCreated
 
+            var event eventsUser.UserCreated
+            
             if err := json.Unmarshal(msg.Body, &event); err != nil {
                 log.Println(err.Error())
                 msg.Nack(false, false) 
                 continue
             }
-            log.Print(event)
-
+            has, err := c.errorCache.HasAuthError(context.Background(), event.ID)
+            if err != nil {
+                log.Println(err.Error())
+            }
+            if has {
+                if err := c.useCaseDeleteUser.Execute(event.ID); err != nil {
+                    log.Println(err.Error())    
+                }
+                msg.Nack(false, false)
+                continue
+            }
             body := userApplication.CreateUserInput{
                 ID: event.ID,
                 AuthUpdatedAt: event.AuthUpdatedAt,
                 Role: event.Role,
             }
 
-            _, err := c.useCase.Execute(body)
+            _, err = c.useCase.Execute(body)
             if err != nil {
                 log.Print(err.Error())
-                msg.Nack(false, false)  // not retry
+                msg.Nack(false, false)  
                 body := eventsUser.EmitUserCreatedError{
                     ID: body.ID,
                 }
