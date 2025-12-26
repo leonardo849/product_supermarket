@@ -9,4 +9,5 @@ var (
 	ErrUserNotFound = errors.New("user wasn't found")
 	ErrUserCannotCreateAProduct = errors.New("user can't create a product")
 	ErrUserWasUpdatedAfterToken = errors.New("user was updated after token credential_version")
+	ErrUserAuthorNotExists = errors.New("author doesn't exist")
 )

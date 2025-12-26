@@ -9,6 +9,7 @@ import (
 	"github.com/leonardo849/product_supermarket/internal/config"
 	"github.com/leonardo849/product_supermarket/internal/infrastructure/http"
 	productHandler "github.com/leonardo849/product_supermarket/internal/infrastructure/http/handlers/product"
+	userHandler "github.com/leonardo849/product_supermarket/internal/infrastructure/http/handlers/user"
 	"github.com/leonardo849/product_supermarket/internal/infrastructure/messaging/rabbitmq"
 	userConsumer "github.com/leonardo849/product_supermarket/internal/infrastructure/messaging/rabbitmq/consumer/users"
 	"github.com/leonardo849/product_supermarket/internal/infrastructure/persistence/postgres"
@@ -47,7 +48,10 @@ func main() {
 	findUserByAuthId := userApp.NewCreateFindUserUseCaseByAuthId(userRepo, userCache)
 	productUc := productApp.NewCreateProductUseCase(productRepo, stockRepo, uow, findUserByAuthId, rabbitmq.NewPublisher(channel, "email_direct"))
 	productHandler := productHandler.NewProductHandler(productUc)
-	app := http.SetupApp(productHandler)
+	errorCache := redis.NewErrorCache(client, 30*time.Minute)
+	checkUserInErrorsUc := userApp.NewFindIfUserIsInErrors(errorCache, findUserByAuthId)
+	userHandler := userHandler.NewUserHandler(checkUserInErrorsUc)
+	app := http.SetupApp(productHandler, userHandler)
 	app.Listen(":" + config.HTTPPort)
 }
 
