@@ -35,6 +35,6 @@ func(u *UserHandler) FindIfUserIsInErrors() fiber.Handler {
 			return ctx.Status(500).JSON(fiber.Map{"allowed": false, "error": "he is in errors"})
 		}
 		
-		return  ctx.Status(200).JSON(fiber.Map{"allowed": true})
+		return  ctx.Status(200).JSON(fiber.Map{"allowed": true, "error": nil})
 	}
 }
