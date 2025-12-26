@@ -67,7 +67,7 @@ func (c *UserDeletedProductConsumer) createQueue() {
 }
 
 func (c *UserDeletedProductConsumer) bindQueue() {
-	c.channel.QueueBind(c.queueName, "user.auth.deleted", c.exchange, false, nil)
+	c.channel.QueueBind(c.queueName, "user.auth.worker_deleted", c.exchange, false, nil)
 }
 
 func (c *UserDeletedProductConsumer) Start() error {
