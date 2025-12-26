@@ -29,10 +29,10 @@ func(u *UserHandler) FindIfUserIsInErrors() fiber.Handler {
 
 		has, err := u.findIfUserIsInErrors.Execute(authId, issuedAt, targetId)
 		if err != nil {
-			return ctx.Status(500).JSON(fiber.Map{"allowed": false, "error": err.Error()})
+			return ctx.Status(200).JSON(fiber.Map{"allowed": false, "error": err.Error()})
 		}
-		if has && err == nil {
-			return ctx.Status(500).JSON(fiber.Map{"allowed": false, "error": "he is in errors"})
+		if has  {
+			return ctx.Status(200).JSON(fiber.Map{"allowed": false, "error": "he is in errors"})
 		}
 		
 		return  ctx.Status(200).JSON(fiber.Map{"allowed": true, "error": nil})
