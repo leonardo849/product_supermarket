@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/joho/godotenv"
@@ -17,16 +18,14 @@ type Config struct {
 	RedisUri string
 	RedisPassword string
 	RedisDatabase int
+	PactAddress string
+	PactPath string
 }
 
 func Load() Config {
-	env := getEnv("APP_ENV", "development")
+	env := getEnv("APP_ENV", "DEV")
 
-	if env != "PROD" {
-		if err := godotenv.Load(); err != nil {
-			log.Println(".env wasn't found. using enviroment variables from system")
-		}
-	}
+	loadEnv()
 
 	redisDatabase, err := strconv.Atoi(getEnv("REDIS_DATABASE", "0"))
 	if err != nil {
@@ -44,6 +43,8 @@ func Load() Config {
 			RedisUri: mustGetEnv("REDIS_URI"),
 			RedisPassword: getEnv("REDIS_PASSWORD", ""),
 			RedisDatabase: redisDatabase,
+			PactAddress: mustGetEnv("PACT_BROKER_BASE_URL"),
+			PactPath: mustGetEnv("PACT_PATH"),
 		}
 	}
 
@@ -60,6 +61,8 @@ func Load() Config {
 		RedisUri: mustGetEnv("REDIS_URI"),
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 		RedisDatabase: redisDatabase,
+		PactAddress: getEnv("PACT_BROKER_BASE_URL", "http://localhost:9292"),
+		PactPath: mustGetEnv("PACT_PATH"),
 	}
 }
 
@@ -76,4 +79,31 @@ func mustGetEnv(key string) string {
 		log.Fatalf("env %s wasn't defined", key)
 	}
 	return value
+}
+
+func loadEnv() {
+	env := getEnv("APP_ENV", "DEV")
+
+	if env == "PROD" {
+		return
+	}
+
+	dir, err := os.Getwd()
+	if err != nil {
+		return
+	}
+
+	for {
+		envPath := filepath.Join(dir, ".env")
+		if _, err := os.Stat(envPath); err == nil {
+			_ = godotenv.Load(envPath)
+			return
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return
+		}
+		dir = parent
+	}
 }
