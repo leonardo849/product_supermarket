@@ -36,3 +36,7 @@ func NewClient(addr, password string, db int) (*Client, error) {
 
 	return &Client{client: client}, nil
 }
+
+func (c *Client) Close() error {
+	return  c.client.Close()
+}

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -30,5 +31,6 @@ func (p *Parser)ParseJWT(tokenString string) (*jwt.MapClaims, error) {
 			return  nil, err
 		}
 		claims := token.Claims.(jwt.MapClaims)
+		log.Print(claims)
 		return &claims, nil
 }

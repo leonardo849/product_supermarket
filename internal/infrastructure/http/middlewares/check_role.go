@@ -8,12 +8,40 @@ import (
 
 func CheckRole(roles []string) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		mapClaims := ctx.Locals("user").(jwt.MapClaims)
-		user := map[string]interface{}(mapClaims)
-		role := user["role"].(string)
-		if !funk.Contains(roles, role) {
-			return ctx.Status(403).JSON(fiber.Map{"error": "you don't have role to do that"})
+		// cfg := config.Load()
+
+		
+		// if cfg.PactMode == "true" {
+		// 	return ctx.Next()
+		// }
+
+		claims, ok := ctx.Locals("user").(jwt.MapClaims)
+		if !ok {
+			return ctx.Status(401).JSON(fiber.Map{
+				"error": "user not authenticated",
+			})
 		}
-		return  ctx.Next()
+
+		roleValue, ok := claims["role"]
+		if !ok {
+			return ctx.Status(403).JSON(fiber.Map{
+				"error": "role not found",
+			})
+		}
+
+		role, ok := roleValue.(string)
+		if !ok {
+			return ctx.Status(403).JSON(fiber.Map{
+				"error": "invalid role format",
+			})
+		}
+
+		if !funk.Contains(roles, role) {
+			return ctx.Status(403).JSON(fiber.Map{
+				"error": "you don't have role to do that",
+			})
+		}
+
+		return ctx.Next()
 	}
 }

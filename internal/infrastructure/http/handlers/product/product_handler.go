@@ -1,6 +1,8 @@
 package product
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/leonardo849/product_supermarket/internal/application/product"
@@ -16,6 +18,7 @@ func (p *ProductHandler) createProduct() fiber.Handler{
 	return  func(ctx *fiber.Ctx) error {
 		mapClaims := ctx.Locals("user").(jwt.MapClaims)
 		user := map[string]interface{}(mapClaims)
+		log.Print(user)
 		authId := user["id"].(string)
 		issuedAt, ok := user["iat"].(float64) 
 		if !ok {

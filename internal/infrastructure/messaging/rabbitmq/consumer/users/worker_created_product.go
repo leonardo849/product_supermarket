@@ -70,7 +70,7 @@ func (c *UserCreatedProductConsumer) createQueue() {
 }
 
 func (c *UserCreatedProductConsumer) bindQueue() {
-    c.channel.QueueBind(c.queueName, "user.auth.created", c.exchange, false, nil)
+    c.channel.QueueBind(c.queueName, "user.auth.created_worker", c.exchange, false, nil)
 }
 
 func (c *UserCreatedProductConsumer) Start() error {
@@ -121,7 +121,6 @@ func (c *UserCreatedProductConsumer) Start() error {
                 AuthUpdatedAt: event.AuthUpdatedAt,
                 Role: event.Role,
             }
-
             _, err = c.useCase.Execute(body)
             if err != nil {
                 log.Print(err.Error())
@@ -132,6 +131,7 @@ func (c *UserCreatedProductConsumer) Start() error {
                 c.publish.Publish(body)
                 continue
             }
+
             msg.Ack(false)
             createdUser := eventsUser.EmitUserCreated{
                 ID: body.ID,

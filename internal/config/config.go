@@ -19,7 +19,7 @@ type Config struct {
 	RedisPassword string
 	RedisDatabase int
 	PactAddress string
-	PactPath string
+	PactMode string
 }
 
 func Load() Config {
@@ -44,7 +44,7 @@ func Load() Config {
 			RedisPassword: getEnv("REDIS_PASSWORD", ""),
 			RedisDatabase: redisDatabase,
 			PactAddress: mustGetEnv("PACT_BROKER_BASE_URL"),
-			PactPath: mustGetEnv("PACT_PATH"),
+			PactMode: getEnv("PACT_MODE", "false"),
 		}
 	}
 
@@ -62,7 +62,7 @@ func Load() Config {
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 		RedisDatabase: redisDatabase,
 		PactAddress: getEnv("PACT_BROKER_BASE_URL", "http://localhost:9292"),
-		PactPath: mustGetEnv("PACT_PATH"),
+		PactMode: getEnv("PACT_MODE", "false"),
 	}
 }
 
