@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"log"
 	"strings"
 	"time"
 
@@ -14,7 +13,6 @@ import (
 func VerifyJwt(jwtParser *auth.Parser) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		cfg := config.Load()
-		log.Print(cfg.PactMode, ":pact mode")
 		if cfg.PactMode == "true" {
 			ctx.Locals("user", jwt.MapClaims{
 			"id":   "69558ca84f914ff89826587f",
