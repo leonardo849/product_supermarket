@@ -11,6 +11,16 @@ import (
 )
 
 
+type NoopPublisher struct{}
+
+func (n *NoopPublisher) Publish(event any) error {
+	return nil
+}
+
+type IPublisher interface {
+    Publish(event any) error
+}
+
 func NewConnection(rabbitURL string) (*amqp.Connection, error) {
     return amqp.Dial(rabbitURL)
 }
@@ -21,10 +31,15 @@ type Publisher struct {
     exchange string
 }
 
-func NewPublisher(ch *amqp.Channel, exchange string) *Publisher {
-    return &Publisher{
-        channel:  ch,
-        exchange: exchange,
+func NewPublisherIfRabbitIsEnabled(ch *amqp.Channel, exchange string, enabled bool) IPublisher {
+    if enabled  && ch != nil {
+            return &Publisher{
+            channel:  ch,
+            exchange: exchange,
+        }
+    } 
+    return  &NoopPublisher{
+        
     }
 }
 

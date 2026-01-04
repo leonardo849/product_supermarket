@@ -27,7 +27,8 @@ func (p *ProductHandler) createProduct() fiber.Handler{
 
 		var input http_dto.CreateProductDTOHttp
 		if err := ctx.BodyParser(&input); err != nil {
-			return ctx.Status(400).JSON(fiber.Map{"error": err.Error()})
+			log.Print(err.Error())
+			return ctx.Status(422).JSON(fiber.Map{"error": err.Error()})
 		}
 		uuid, err := p.createProductUC.Execute(appProduct.CreateProductInput{
 			Name: input.Name,

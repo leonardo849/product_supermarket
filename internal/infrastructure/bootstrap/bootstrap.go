@@ -43,7 +43,10 @@ func BuildApp(cfg *config.Config, startConsumers bool) (*AppContainer, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	isEnabled := false
+	if cfg.RabbitOn == "true" {
+		isEnabled = true
+	}
 	var rabbitConn *amqp091.Connection
 	var rabbitCh *amqp091.Channel
 
@@ -69,7 +72,7 @@ func BuildApp(cfg *config.Config, startConsumers bool) (*AppContainer, error) {
 		stockRepo,
 		uow,
 		findUserByAuthId,
-		rabbitmq.NewPublisher(rabbitCh, "email_direct"),
+		rabbitmq.NewPublisherIfRabbitIsEnabled(rabbitCh, "email_direct", isEnabled),
 	)
 
 	checkUserInErrorsUC := userApp.NewFindIfUserIsInErrors(
@@ -84,7 +87,7 @@ func BuildApp(cfg *config.Config, startConsumers bool) (*AppContainer, error) {
 
 	if startConsumers {
 		startConsumersFn(
-			rabbitCh, userRepo, userCache, errorCache, redisClient,
+			rabbitCh, userRepo, userCache, errorCache, isEnabled,
 		)
 	}
 
@@ -136,17 +139,18 @@ func startConsumersFn(
 	userRepo *postgres.UserRepository,
 	userCache domainUser.Cache,
 	errorCache domainError.ErrorCache,
-	rc *redis.Client,
+	// rc *redis.Client,
+	isEnabled bool,
 ) {
 	userCreateUC := userApp.NewCreateUserUseCase(userRepo, userCache)
 	userDeleteUC := userApp.NewDeleteUserUseCase(userRepo, userCache)
-
+	
 	userCreatedConsumer := userConsumer.NewUserCreatedProductConsumer(
 		ch,
 		"queue_product_auth",
 		userCreateUC,
 		userDeleteUC,
-		rabbitmq.NewPublisher(ch, "product_auth_direct"),
+		rabbitmq.NewPublisherIfRabbitIsEnabled(ch, "product_auth_direct", isEnabled),
 		errorCache,
 	)
 

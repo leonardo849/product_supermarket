@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"log"
 	"strings"
 	"time"
 
@@ -13,14 +14,18 @@ import (
 func VerifyJwt(jwtParser *auth.Parser) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		cfg := config.Load()
-		if cfg.PactMode == "true" {
+		log.Print("to aqui")
+		log.Print(cfg.Test)
+		if cfg.PactMode == "true" || cfg.Test == "true" {
 			ctx.Locals("user", jwt.MapClaims{
 			"id":   "69558ca84f914ff89826587f",
 			"role": "MANAGER",
 			"iat":  float64(time.Now().Unix()),
     	})
+			log.Print("passei daqui")
 			return  ctx.Next()
 		}
+		log.Print("não entrei")
 
 		
 		

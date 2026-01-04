@@ -80,17 +80,22 @@ func TestPactProviderV4(t *testing.T) {
 	defer container.Redis.Close()
 
 	waitForProviderReady(t, server.URL)
-
+	var providerVersion string = time.Now().Format("20060102-150405")
+	if cfg.GitCommit != "none" {
+		providerVersion = cfg.GitCommit
+	}
+	
 	verifier := provider.NewVerifier()
 	err = verifier.VerifyProvider(t, provider.VerifyRequest{
 	Provider:        "product_service",   
 	ProviderBaseURL: server.URL,
 
 	BrokerURL: cfg.PactAddress,
-
+	BrokerUsername: cfg.PactUsername,
+	BrokerPassword: cfg.PactPassword,
 	PublishVerificationResults: true,
-	ProviderVersion:           "1.0.0",    
-
+	ProviderVersion: providerVersion,    
+	ProviderBranch:            cfg.GitBranch,
 	StateHandlers: models.StateHandlers{
 		"user exists and permissions were evaluated": func(
 			setup bool,

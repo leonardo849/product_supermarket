@@ -12,31 +12,7 @@ import (
 
 func SetupApp(productHandler *product.ProductHandler, userHandler *user.UserHandler, errorCache domainError.ErrorCache) *fiber.App {
 	app := fiber.New()
-	// app.Use(func (ctx *fiber.Ctx) error {
-	// 	cfg := config.Load()
 
-	// 	if cfg.PactMode != "true" {
-	// 		return ctx.Next()
-	// 	}
-
-	// 	path := ctx.Path()
-
-		
-	// 	if path == "/_pact/provider-states" {
-	// 		return ctx.Next()
-	// 	}
-
-	// 	if path == "/user/user-123/permissions/errors" {
-	// 		return ctx.Next()
-	// 	}
-	// 	if path == "/health" {
-	// 		return ctx.Next()
-	// 	}
-
-	// 	return ctx.Status(fiber.StatusForbidden).JSON(fiber.Map{
-	// 		"error": "route disabled during pact verification",
-	// 	})
-	// })
 	productGroup := app.Group("/product")
 	userGroup := app.Group("/user")
 	jwtParser := auth.NewParser(config.Load().SecretJWT)

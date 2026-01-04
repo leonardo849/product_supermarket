@@ -20,6 +20,12 @@ type Config struct {
 	RedisDatabase int
 	PactAddress string
 	PactMode string
+	RabbitOn string
+	Test string
+	PactUsername string
+	PactPassword string
+	GitCommit string
+	GitBranch string
 }
 
 func Load() Config {
@@ -45,6 +51,12 @@ func Load() Config {
 			RedisDatabase: redisDatabase,
 			PactAddress: mustGetEnv("PACT_BROKER_BASE_URL"),
 			PactMode: getEnv("PACT_MODE", "false"),
+			RabbitOn: mustGetEnv("RABBIT_ON"),
+			Test: getEnv("TEST_ON", "false"),
+			PactUsername: mustGetEnv("PACT_USERNAME"),
+			PactPassword: mustGetEnv("PACT_PASSWORD"),
+			GitBranch: getEnv("GIT_BRANCH", "main"),
+			GitCommit: getEnv("GIT_COMMIT", "none"),
 		}
 	}
 
@@ -63,6 +75,12 @@ func Load() Config {
 		RedisDatabase: redisDatabase,
 		PactAddress: getEnv("PACT_BROKER_BASE_URL", "http://localhost:9292"),
 		PactMode: getEnv("PACT_MODE", "false"),
+		RabbitOn: mustGetEnv("RABBIT_ON"),
+		Test: getEnv("TEST_ON", "false"),
+		PactUsername: getEnv("PACT_USERNAME", ""),
+		PactPassword: getEnv("PACT_PASSWORD", ""),
+		GitBranch: getEnv("GIT_BRANCH", "main"),
+		GitCommit: getEnv("GIT_COMMIT", "none"),
 	}
 }
 

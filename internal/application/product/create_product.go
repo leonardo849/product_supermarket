@@ -9,12 +9,12 @@ import (
 
 	// eventsUser "github.com/leonardo849/product_supermarket/internal/domain/events/user"
 	// eventsProduct "github.com/leonardo849/product_supermarket/internal/domain/events/product"
+	applicationUser "github.com/leonardo849/product_supermarket/internal/application/user"
 	domainProduct "github.com/leonardo849/product_supermarket/internal/domain/product"
 	domainStock "github.com/leonardo849/product_supermarket/internal/domain/stock"
 	domainUser "github.com/leonardo849/product_supermarket/internal/domain/user"
 	"github.com/leonardo849/product_supermarket/internal/infrastructure/persistence/postgres"
 	"gorm.io/gorm"
-	applicationUser "github.com/leonardo849/product_supermarket/internal/application/user"
 )
 
 type CreateProductInput struct {
