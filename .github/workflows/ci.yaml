@@ -65,7 +65,8 @@ jobs:
 
       - name: Install Pact FFI
         run: |
-          curl -fsSL https://github.com/pact-foundation/pact-reference/releases/latest/download/pact-ffi-linux-x86_64.tar.gz \
+          curl -fsSL \
+            https://github.com/pact-foundation/pact-reference/releases/download/v0.4.22/pact-ffi-linux-x86_64.tar.gz \
             | tar xz
           sudo mv pact-ffi-linux-x86_64/lib/libpact_ffi.so /usr/local/lib/
           sudo ldconfig
