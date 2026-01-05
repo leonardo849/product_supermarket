@@ -50,6 +50,8 @@ jobs:
       PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
       GIT_COMMIT: ${{ github.sha }}
       RABBIT_ON: "false"
+      PACT_MODE: "true"
+      TEST_ON:: "true"
 
     steps:
       - name: checkout repository
