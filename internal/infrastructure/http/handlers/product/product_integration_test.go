@@ -2,10 +2,14 @@
 // +build integration
 
 package product_test
+
 import (
+	"io"
 	"net/http/httptest"
-	"testing"
 	"strings"
+	"testing"
+
+	"log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,4 +33,8 @@ func TestCreateProduct(t *testing.T) {
 	resp, err := app.Test(req)
 	assert.NoError(t, err)
 	assert.Equal(t,200, resp.StatusCode)
+	bodyBytes, err := io.ReadAll(resp.Body)
+	assert.NoError(t, err)
+
+	log.Println("response body:", string(bodyBytes))
 }
