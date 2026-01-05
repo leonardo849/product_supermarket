@@ -1,5 +1,4 @@
-//go:build integration
-// +build integration
+
 
 package product_test
 
@@ -23,7 +22,7 @@ func createUserTest() {
 		ID: uuid.New(),
 		AuthId: "69558ca84f914ff89826587f",
 		Role: "MANAGER",
-		AuthUpdatedAt: time.Now(),
+		AuthUpdatedAt: time.Now().Add(-5 * time.Minute),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	})
