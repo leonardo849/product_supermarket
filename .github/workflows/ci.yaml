@@ -39,7 +39,7 @@ jobs:
     env:
       ENVIRONMENT: test
       ENABLE_RABBIT: "false"
-      DATABASE_URL: postgres://test:test@localhost:5432/product_test?sslmode=disable
+      DATABASE_URI: postgres://test:test@localhost:5432/product_test?sslmode=disable
       REDIS_URI: localhost:6379
       REDIS_DATABASE: "1"
       REDIS_PASSWORD: ""
