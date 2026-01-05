@@ -78,10 +78,13 @@ jobs:
           sudo ldconfig
 
 
-
-      - name: run integration tests
+      - name: run integration users
         run: |
-          go test ./... -v -tags=integration -count=1
+          go test ./internal/infrastructure/http/handlers/user -v -tags=integration -count=1
+
+      - name: run integration product 
+        run: | 
+          go test ./internal/infrastructure/http/handlers/product -v -tags=integration -count=1
 
       - name: run Pact Provider tests
         run: |
