@@ -29,8 +29,9 @@ type StockModel struct {
 
 type UserModel struct {
 	ID        uuid.UUID `gorm:"type:uuid;primaryKey"`
-	AuthId string
+	AuthId string `gorm:"uniqueIndex"`
 	Role string 
 	CreatedAt time.Time
+	AuthUpdatedAt time.Time
 	UpdatedAt time.Time
 }

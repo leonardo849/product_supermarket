@@ -3,6 +3,8 @@ package config
 import (
 	"log"
 	"os"
+	"path/filepath"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -12,23 +14,49 @@ type Config struct {
 	HTTPPort    string
 	DatabaseURL string
 	SecretJWT string
+	RabbitURL string
+	RedisUri string
+	RedisPassword string
+	RedisDatabase int
+	PactAddress string
+	PactMode string
+	RabbitOn string
+	Test string
+	PactUsername string
+	PactPassword string
+	GitCommit string
+	GitBranch string
 }
 
 func Load() Config {
-	env := getEnv("APP_ENV", "development")
+	env := getEnv("APP_ENV", "DEV")
 
-	if env != "PROD" {
-		if err := godotenv.Load(); err != nil {
-			log.Println(".env wasn't found. using enviroment variables from system")
-		}
+	loadEnv()
+
+	redisDatabase, err := strconv.Atoi(getEnv("REDIS_DATABASE", "0"))
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 
 	if env == "PROD" {
+		
 		return Config{
 			Env:         env,
 			HTTPPort:    mustGetEnv("PORT"),
 			DatabaseURL: mustGetEnv("DATABASE_URI"),
 			SecretJWT: mustGetEnv("SECRETJWT"),
+			RabbitURL: mustGetEnv("RABBIT_URI"),
+			RedisUri: mustGetEnv("REDIS_URI"),
+			RedisPassword: getEnv("REDIS_PASSWORD", ""),
+			RedisDatabase: redisDatabase,
+			PactAddress: mustGetEnv("PACT_BROKER_BASE_URL"),
+			PactMode: getEnv("PACT_MODE", "false"),
+			RabbitOn: mustGetEnv("RABBIT_ON"),
+			Test: getEnv("TEST_ON", "false"),
+			PactUsername: mustGetEnv("PACT_USERNAME"),
+			PactPassword: mustGetEnv("PACT_PASSWORD"),
+			GitBranch: getEnv("GIT_BRANCH", "main"),
+			GitCommit: getEnv("GIT_COMMIT", "none"),
 		}
 	}
 
@@ -41,6 +69,18 @@ func Load() Config {
 			"postgres://postgres:postgres@localhost:5432/product_db?sslmode=disable",
 		),
 		SecretJWT:mustGetEnv("SECRETJWT"),
+		RabbitURL: mustGetEnv("RABBIT_URI"),
+		RedisUri: mustGetEnv("REDIS_URI"),
+		RedisPassword: getEnv("REDIS_PASSWORD", ""),
+		RedisDatabase: redisDatabase,
+		PactAddress: getEnv("PACT_BROKER_BASE_URL", "http://localhost:9292"),
+		PactMode: getEnv("PACT_MODE", "false"),
+		RabbitOn: mustGetEnv("RABBIT_ON"),
+		Test: getEnv("TEST_ON", "false"),
+		PactUsername: getEnv("PACT_USERNAME", ""),
+		PactPassword: getEnv("PACT_PASSWORD", ""),
+		GitBranch: getEnv("GIT_BRANCH", "main"),
+		GitCommit: getEnv("GIT_COMMIT", "none"),
 	}
 }
 
@@ -57,4 +97,31 @@ func mustGetEnv(key string) string {
 		log.Fatalf("env %s wasn't defined", key)
 	}
 	return value
+}
+
+func loadEnv() {
+	env := getEnv("APP_ENV", "DEV")
+
+	if env == "PROD" {
+		return
+	}
+
+	dir, err := os.Getwd()
+	if err != nil {
+		return
+	}
+
+	for {
+		envPath := filepath.Join(dir, ".env")
+		if _, err := os.Stat(envPath); err == nil {
+			_ = godotenv.Load(envPath)
+			return
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return
+		}
+		dir = parent
+	}
 }

@@ -1,0 +1,91 @@
+name: CI - Go + Integration + Pact
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: product_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7.2
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      ENVIRONMENT: test
+      ENABLE_RABBIT: "false"
+      DATABASE_URI: postgres://test:test@localhost:5432/product_test?sslmode=disable
+      REDIS_URI: localhost:6379
+      REDIS_DATABASE: "1"
+      REDIS_PASSWORD: ""
+      SECRETJWT: "123"
+      RABBIT_URI: amqp://guest:guest@localhost:5672/
+      PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
+      PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
+      PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
+      GIT_COMMIT: ${{ github.sha }}
+      RABBIT_ON: "false"
+      PACT_MODE: "true"
+      TEST_ON:: "true"
+
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+
+      - name: download dependencies
+        run: go mod download
+
+      - name: pact ffi
+        run: |
+          curl -fsSL \
+            https://github.com/pact-foundation/pact-reference/releases/download/libpact_ffi-v0.4.22/libpact_ffi-linux-x86_64.so.gz \
+            -o libpact_ffi.so.gz
+
+          gunzip libpact_ffi.so.gz
+
+          sudo mv libpact_ffi.so /usr/local/lib/libpact_ffi.so
+          sudo ldconfig
+
+
+      - name: run integration users
+        run: |
+          go test ./internal/infrastructure/http/handlers/user -v -tags=integration -count=1
+
+      - name: run integration product 
+        run: | 
+          go test ./internal/infrastructure/http/handlers/product -v -tags=integration -count=1
+
+      - name: run Pact Provider tests
+        run: |
+          go test ./internal/contract -v -count=1

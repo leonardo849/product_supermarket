@@ -6,10 +6,23 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// type IParser interface {
+// 	ParseJWT(tokenString string) (*jwt.MapClaims, error)
+// }
 
 type Parser struct {
 	secretJwt string
 }
+
+// type FakeParser struct {
+
+// }
+
+// func (f *FakeParser) ParseJWT(tokenString string) (*jwt.MapClaims, error) {
+// 	claims := jwt.MapClaims{
+// 		"auth_id": "",
+// 	}
+// }
 
 func NewParser(secretJwt string) *Parser {
 	return  &Parser{

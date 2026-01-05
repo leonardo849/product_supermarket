@@ -34,7 +34,7 @@ func New(Name string, Description string, Price int64, category string) (*Produc
     }
 
 
-	now := time.Now()
+	now := time.Now().UTC()
 	return  &Product{
 		ID: uuid.New(),
 		Name: Name,
