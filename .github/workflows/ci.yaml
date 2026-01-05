@@ -63,11 +63,12 @@ jobs:
       - name: download dependencies
         run: go mod download
 
-      - name: install Pact FFI
+      - name: install pact FFI
         run: |
-          curl -fsSL https://raw.githubusercontent.com/pact-foundation/pact-reference/main/install.sh | bash
-          echo "/usr/local/lib" | sudo tee /etc/ld.so.conf.d/pact.conf
+          curl -fsSL https://github.com/pact-foundation/pact-reference/releases/download/v0.4.22/pact-ffi-linux-x86_64.tar.gz | tar xz
+          sudo mv pact-ffi-linux-x86_64/lib/libpact_ffi.so /usr/local/lib/
           sudo ldconfig
+
 
 
       - name: run integration tests
