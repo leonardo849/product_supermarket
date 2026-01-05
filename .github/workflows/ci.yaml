@@ -66,6 +66,8 @@ jobs:
       - name: install Pact FFI
         run: |
           curl -fsSL https://raw.githubusercontent.com/pact-foundation/pact-reference/master/install.sh | bash
+          echo "/usr/local/lib" | sudo tee /etc/ld.so.conf.d/pact.conf
+          sudo ldconfig
 
 
       - name: run integration tests
